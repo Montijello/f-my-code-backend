@@ -9,7 +9,7 @@ function login(username, password) {
   return userModel.getOneByUsername(username)
     .then(data => {
       if (!data) {
-        throw { status: 400, message: "Bad Request" };
+        throw { status: 400, message: "User not real" };
       }
       user = data;
 
@@ -24,4 +24,4 @@ function login(username, password) {
     })
 }
 
-module.exports = { login };
+module.exports = {login}

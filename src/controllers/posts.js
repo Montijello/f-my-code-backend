@@ -3,7 +3,6 @@ const models = require("../models/posts");
 function getAll(req, res, next) {
   models.getAll()
     .then((data) => {
-      console.log(data)
       res.status(200).send(data)
     })
     .catch(next)

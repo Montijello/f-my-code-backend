@@ -1,23 +1,27 @@
 const schemes = {
-    users: [ "first_name", "last_name", "username", "password" ],
+    users: [ "username", "email", "password" ],
     posts: [ "title", "description", "code" ],
     comments: [ "content" ],
     ratings: ["rating" ]
 }
 
+// checks the entry argument against the scheme argument to make sure that all fields have been submitted
+// if any fields are missing, that field name is pushed into an array and returned
 function verifyEntry(entry, scheme) {
   const requirements = schemes[scheme];
 
-
-  const errors = requirements.reduce((acc, property) => {
+  const missingFields = requirements.reduce((acc, property) => {
     if (!entry[property]) {
       acc.push(property);
     }
 
     return acc;
   }, [] );
-
-  return errors;
+  
+  if (missingFields.length > 0) {
+    throw  "Missing: " + errors.join(", ")
+  }
 }
 
-module.exports = { verifyEntry };
+module.exports = verifyEntry;
+

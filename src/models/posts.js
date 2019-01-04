@@ -1,5 +1,5 @@
-const db = require("../../db");
-const utils = require("../utils");
+const db = require("../../db")
+const utils = require("../utils")
 
 
 function getAll(entry) {
@@ -26,14 +26,14 @@ function getAll(entry) {
 }
 
 function create(entry) {
-  const errors = utils.verifyEntry(entry, "posts");
 
-  if (errors.length > 0) {
-    throw {
-      status: 400,
-      message: "Missing: " + errors.join(", ")
-    };
-  }
+  // The verifyEntry invocation has been moved to controllers
+  // and the throw error has been moved into verifyEntry itself
+
+  // const errors = utils.verifyEntry(entry, "posts");
+  // if (errors.length > 0) {
+  //   throw { status: 400, message: "Missing: " + errors.join(", ") };
+  // }
   return db("posts")
     .insert(entry)
     .returning("*");

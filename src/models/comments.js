@@ -20,13 +20,17 @@ function getAll(postId) {
 }
 
 function create(postId, userId, entry) {
-  const errors = utils.verifyEntry(entry, "comments");
 
-  if (errors.length > 0) {
-    throw { status: 400, message: "Missing: " + errors.join(", ") };
-  }
+  // The verifyEntry invocation has been moved to controllers
+  // and the throw error has been moved into verifyEntry itself
 
-  entry.post_id = postId;
+  // const errors = utils.verifyEntry(entry, "comments");
+  // if (errors.length > 0) {
+  //   throw { status: 400, message: "Missing: " + errors.join(", ") };
+  // }
+
+
+  entry.post_id = postId
   entry.user_id = userId
 
   return db("posts")
@@ -41,7 +45,6 @@ function create(postId, userId, entry) {
       .where({ post_id: postId })
       .insert(entry)
       .returning("*");
-
     })
 }
 

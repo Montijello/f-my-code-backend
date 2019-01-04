@@ -8,15 +8,25 @@ function login(req, res, next) {
   const password = req.body.password;
 
   if (!username || !password) { // Requires a username and password
-    next({ status: 400, message: "Bad Request" });
+    return next({ status: 400, message: "Bad Request" });
   } else {
     models.login(username, password)
-    .then(user => {
-      const token = jwt.sign({ sub: { id: user.id } }, process.env.SECRET);
+      .then(user => {
 
-      res.status(200).send({ id: user.id, token });
-    })
-    .catch(next);
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////    why the substring in the token below?      /////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        // const token = jwt.sign({ sub: { id: user.id } }, process.env.SECRET);
+        const token = jwt.sign({ id: user.id }, process.env.SECRET);
+
+        // return res.status(200).send({ id: user.id, token });
+        return res.status(200).send({ token });
+      })
+      .catch(next);
   }
 }
 
@@ -24,20 +34,41 @@ function login(req, res, next) {
  *  QUALITY OF LIFE FUNCTIONS
  */
 
+function getAuthStatus(req, res, next){
+  res.status(200).send({id:req.claim.id})
+}
+
+function isAuthenticated(req, res, next){
+  if(!req.headers.authorization){
+    return next({ status: 401, message: 'Unauthorized' })
+  }
+  const [scheme, credentials] = req.headers.authorization.split(' ')
+
+  jwt.verify(credentials, process.env.SECRET, (err, payload)=>{
+    if(err){
+      return next({ status: 401, message: 'Unauthorized' })
+    }
+    req.claim = payload
+    next()
+  })
+}
+
+/*
+ *  END QOL FUNCTIONS
+ */
+
 //  Checks the header for a valid jwt token.
 function authorize(req, res, next) {
   if (!req.headers.authorization) { // look for the authorization header
-    next({ status: 401, message: "Unauthorized" });
+    return next({ status: 401, message: "Unauthorized" });
   } else {
     // Pull the token of the authorization heading
 
-    const [ scheme, token ] = req.headers.authorization.split(" ");
+    const [scheme, token] = req.headers.authorization.split(" ");
 
     jwt.verify(token, process.env.SECRET, (err, payload) => {
       if (err) {
-        console.log(err);
-
-        next({ status: 401, message: "Unauthorized" });
+        return next({ status: 401, message: "Unauthorized" });
       }
 
       // The payload has been re-encoded from base64 to unicode. Attach it to
@@ -49,11 +80,26 @@ function authorize(req, res, next) {
   }
 }
 
+
 /*
- *  The middlewares below pass their respective tables along with the params id
- *  and the stored token claim to a helper function, permit, below which checks
- *  that the item at the given parameter id has a
+ *  The middleware functions below use a helper function, permit, to return specified data from their 
+ *  associated tables, checking the user's token to ensure authorization.
  */
+
+function permit(table, id, claim) {
+  return db(table)
+    .where({ id: id })
+    .then(([data]) => {
+      if (!data) {
+        throw { status: 400, message: "Bad Request" };
+      }
+      if (data.user_id !== claim.sub.id) {
+        throw { status: 401, message: "Unauthorized" };
+      }
+      else return
+    })
+}
+
 function editPost(req, res, next) {
   permit("posts", req.params.post_id, req.claim)
     .then(next)
@@ -78,10 +124,14 @@ function editRating(req, res, next) {
     .catch(next);
 }
 
+function postDeletePermit(postId, claim) {
+  return db("posts")
+    .where({ id: postId, user_id: claim.sub.id });
+}
+
 function deleteComment(req, res, next) {
   postDeletePermit(req.params.post_id, req.claim)
-    .then(([ data ]) => {
-      console.log(data);
+    .then(([data]) => {
       if (!data) {
         permit("comments", req.params.comment_id, req.claim)
           .then(next)
@@ -90,25 +140,6 @@ function deleteComment(req, res, next) {
         next();
       }
     });
-}
-
-function permit(table, id, claim) {
-  return db(table)
-    .where({ id: id })
-    .then(([ data ]) => {
-      if (!data) {
-        throw { status: 400, message: "Bad Request" };
-      }
-
-      if (data.user_id !== claim.sub.id) {
-        throw { status: 401, message: "Unauthorized" };
-      }
-  });
-}
-
-function postDeletePermit(postId, claim) {
-  return db("posts")
-    .where({ id: postId, user_id: claim.sub.id });
 }
 
 function test(req, res, next) {
@@ -122,5 +153,7 @@ module.exports = {
   editPost,
   editRating,
   editComment,
-  deleteComment
+  deleteComment, 
+  getAuthStatus,
+  isAuthenticated
 };

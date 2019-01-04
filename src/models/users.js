@@ -1,8 +1,7 @@
 const bcrypt = require("bcrypt");
 const db = require("../../db");
-const utils = require("../utils");
 
-function getOne(user_id) {
+function getOneById(user_id) {
   return db("users")
     .where({ id: user_id })
     .first();
@@ -14,33 +13,34 @@ function getOneByUsername(username) {
     .first()
 }
 
-function createUser(entry) {
-  const errors = utils.verifyEntry(entry, "users");
+function createUser(username, password) {
 
-  if (errors.length > 0) {
-    throw { status: 400, message: "Missing: " + errors.join(", ") };
-  }
+  // The verifyEntry invocation has been moved to controllers
+  // and the throw error has been moved into verifyEntry itself
 
-  return getOneByUsername(entry.username)
+  // const errors = utils.verifyEntry( entry, "users" );
+  // if (errors.length > 0) {
+  //   throw { status: 400, message: "Missing: " + errors.join(", ") };
+  // }
+
+  return getOneByUsername(username)
     .then(data => {
       if (data) {
         throw { status: 400, message: "Username already exists" };
       }
-
-      return bcrypt.hash(entry.password, 10)
+      return bcrypt.hash(password, 10)
     })
-    .then(hash => {
-      entry.password = hash;
+    .then(hashedPassword => {
 
       return db("users")
-      .insert(entry)
-      .returning("*");
+        .insert({ username, password: hashedPassword })
+        .returning("*");
     })
-    .then(([ user ]) => {
+    .then(([user]) => {
       delete user.password;
 
       return user;
     })
 }
 
-module.exports = { getOneByUsername, createUser, getOne };
+module.exports = { getOneByUsername, createUser, getOneById };

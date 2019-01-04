@@ -2,8 +2,8 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const cors = require('cors')
-const authController = require('./controllers/auth')
 
+// if app is running on your machine, use your version of .env
 if(process.env.NODE_ENV !== 'production') {
   require('dotenv').load()
 }
@@ -29,6 +29,8 @@ app.use(function(req, res, next) {
   next({status: 404, message: 'Route Not Found'})
 })
 
+////////////////////////// ERROR HANDLING //////////////////////////
+
 app.use((err, _req, res, _next)=> {
   console.error(err)
   const status = err.status || 500
@@ -44,4 +46,3 @@ app.listen(port, () => {
   console.log('Howdy from ', port)
 })
 
-module.exports = { app }

@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const authController = require("../controllers/auth");
 
-const controllers = require("../controllers/auth");
+// when 'token' route is hit, run controllers.login at ../controllers/auth
+// token is hit at frontend/scripts/server.js
 
-router.post("/token", controllers.login);
+router.get('/token', authController.isAuthenticated, authController.getAuthStatus)
+router.post('/token', authController.login);
 
 module.exports = router;
