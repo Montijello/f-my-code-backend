@@ -20,24 +20,25 @@ function create(entry) {
     .returning("*")
 }
 
+function update(voteData) {
+  // const errors = verifyEntry("ratings")
 
-function update(entry, id) {
-  const errors = verifyEntry(entry, "ratings")
-
-  if(errors && errors.length > 0) {
-    throw { status: 400, message: "Missing " + errors.join(", ") }
-  }
-  return db("ratings")
-    .update(entry)
-    .where({id})
-    .returning("*")
+  // if (errors && errors.length > 0) {
+  //   console.log("you haven't fulfilled the parametes for some reason")
+  //   throw { status: 400, message: "Missing " + errors.join(", ") }
+  // }
+  return db("ratings").insert({
+    rating: voteData[0],
+    user_id: voteData[1],
+    post_id: voteData[2]
+  })
 }
 
 function remove(id) {
-return db("ratings")
-  .del()
-  .where({id})
-  .returning("*")
+  return db("ratings")
+    .del()
+    .where({ id })
+    .returning("*")
 }
 
 module.exports = { getAll, create, update, remove }

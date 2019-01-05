@@ -74,9 +74,8 @@ function authorize(req, res, next) {
       // The payload has been re-encoded from base64 to unicode. Attach it to
       // the req for later use.
       req.claim = payload;
-
-      next();
-    });
+      next()
+    })
   }
 }
 

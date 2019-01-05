@@ -2,7 +2,7 @@ const schemes = {
     users: [ "username", "email", "password" ],
     posts: [ "title", "description", "code" ],
     comments: [ "content" ],
-    ratings: ["rating" ]
+    ratings: ["rating", "user_id", "post_id"]
 }
 
 // checks the entry argument against the scheme argument to make sure that all fields have been submitted
@@ -19,7 +19,7 @@ function verifyEntry(entry, scheme) {
   }, [] );
   
   if (missingFields.length > 0) {
-    throw  "Missing: " + errors.join(", ")
+    throw  "Missing: " + missingFields.join(", ")
   }
 }
 
