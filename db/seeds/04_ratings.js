@@ -3,7 +3,7 @@ exports.seed = function(knex, Promise) {
         .insert([
           {
             id: 1,
-            rating: 3,
+            rating: 1,
             user_id: 1,
             post_id: 1
           },
@@ -15,7 +15,7 @@ exports.seed = function(knex, Promise) {
           },
           {
             id: 3,
-            rating: 8,
+            rating: -1,
             user_id: 3,
             post_id: 2
 

@@ -22,18 +22,39 @@ function create(req, res, next) {
     .catch(next)
 }
 
+function check(req, res, next) {
+  const postId = req.params.rating_id
+  const userId = req.claim.id
+  const rating = req.body[1]
+
+  const voteData = [rating, userId, postId]
+
+  models.check(voteData).then(response => {
+    if (response[0] === undefined) next()
+    else if (response[0].rating + voteData[0] === 0) {
+      models.remove(userId, postId)
+        .then(response => { res.status(201).send(response) })
+    }
+    else {
+      res.status(500).send(response)
+    }
+  })
+    .catch((err) => console.log(err));
+}
+
 // The following info will land in the db
 // id: whatever....
 // rating: req.body[1]
 // user_id: req.claim.id
-// post_id: req.body[1]
+// post_id: req.body[0]
 
 function update(req, res, next) {
-  const id = req.params.rating_id
+  const postId = req.params.rating_id
   const userId = req.claim.id
   const rating = req.body[1]
 
-  const voteData = [rating, userId, id]
+  const voteData = [rating, userId, postId]
+
 
   models.update(voteData)
     .then(response => {
@@ -41,7 +62,6 @@ function update(req, res, next) {
     })
     .catch(next)
 }
-
 
 function remove(req, res, next) {
   const id = req.params.rating_id
@@ -53,4 +73,4 @@ function remove(req, res, next) {
     .catch(next)
 }
 
-module.exports = { getAll, create, update, remove }
+module.exports = { getAll, create, update, remove, check }

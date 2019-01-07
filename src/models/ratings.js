@@ -20,6 +20,23 @@ function create(entry) {
     .returning("*")
 }
 
+function check(voteData) {
+  // the following returns an array with all of the ratings that match
+  // even if there is only one rating in the array
+  // each rating is returned as an object 
+  // like so [ { id: 4, rating: 1, user_id: 4, post_id: 1 }, ...]
+
+  let user_id = Number(voteData[1])
+  let post_id = Number(voteData[2])
+
+
+  return db('ratings').where({
+    user_id: user_id,
+    post_id: post_id
+  })
+}
+
+
 function update(voteData) {
   // const errors = verifyEntry("ratings")
 
@@ -27,6 +44,7 @@ function update(voteData) {
   //   console.log("you haven't fulfilled the parametes for some reason")
   //   throw { status: 400, message: "Missing " + errors.join(", ") }
   // }
+
   return db("ratings").insert({
     rating: voteData[0],
     user_id: voteData[1],
@@ -34,11 +52,14 @@ function update(voteData) {
   })
 }
 
-function remove(id) {
+function remove(user_id, post_id) {
   return db("ratings")
     .del()
-    .where({ id })
+    .where({ 
+      user_id: user_id, 
+      post_id: post_id
+    })
     .returning("*")
 }
 
-module.exports = { getAll, create, update, remove }
+module.exports = { getAll, create, update, remove, check }
